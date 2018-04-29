@@ -118,4 +118,6 @@ pyvenv.cfg
 .venv
 pip-selfcheck.json
 
-imdb_crop
+src/imdb/imdb_data
+!mat_to_csv.py
+!imdb.csv

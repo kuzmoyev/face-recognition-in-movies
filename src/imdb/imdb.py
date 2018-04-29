@@ -22,12 +22,23 @@ SEARCH_MOVIES_URL = API_URL + SEARCH_MOVIES_PARAMETER + '&' + API_KEY_PARAMETER
 MOVIE_DETAILS_URL = API_URL + MOVIE_DETAILS_PARAMETER + '?' + CREDITS_PARAMETER + '&' + API_KEY_PARAMETER
 
 ############### IMAGES ###############
-DATA_FOLDER = '/home/imdb_data'
+# if IMDB dataset is used (https://data.vision.ee.ethz.ch/cvl/rrothe/imdb-wiki/)
+BIG_DATA_FOLDER = '/home/imdb_data'
+
+# if IMDB dataset is not used. All photos will be downloaded from TMDB.
+SMALL_DATA_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'imdb_data')
+
+DATA_FOLDER = BIG_DATA_FOLDER if os.path.exists(BIG_DATA_FOLDER) else SMALL_DATA_FOLDER
 METADATA_FOLDER = os.path.join(DATA_FOLDER, 'meta')
 IMDB_IMAGES_FOLDER = os.path.join(DATA_FOLDER, 'imdb_images')
 IMDB_METADATA = os.path.join(METADATA_FOLDER, 'imdb.csv')
 TMDB_IMAGES_FOLDER = os.path.join(DATA_FOLDER, 'tmdb_images')
 TMDB_METADATA = os.path.join(METADATA_FOLDER, 'tmdb.csv')
+
+# Ensure data folders
+for directory in DATA_FOLDER, METADATA_FOLDER, IMDB_IMAGES_FOLDER, TMDB_IMAGES_FOLDER:
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
 
 def get_movie_data(title):

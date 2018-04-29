@@ -7,7 +7,7 @@ class BaseVideo:
 
     def __init__(self, file_name, **kwargs):
         self.file_name = file_name
-        self.video = self.cv_class(file_name, **kwargs)
+        self.video = self.cv_class(file_name, **kwargs) if file_name is not None else None
 
     @property
     def width(self):
@@ -42,7 +42,8 @@ class BaseVideo:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.video.release()
+        if self.video:
+            self.video.release()
 
     def __str__(self):
         return f'{self.width}x{self.height} {self.fps}fps, {self.frames_count}frames, {self.video_length}s'
@@ -82,4 +83,5 @@ class VideoWriter(BaseVideo):
         super().__init__(file_name, fourcc=cv2.VideoWriter_fourcc(*fourcc), fps=fps, frameSize=(width, height))
 
     def write(self, frame):
-        self.video.write(frame)
+        if self.video:
+            self.video.write(frame)

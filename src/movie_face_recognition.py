@@ -9,7 +9,7 @@ from imdb import imdb
 
 
 def parse_args():
-    examples = '''example:
+    examples = '''examples:
 
      ./%(prog)s "Pulp Fiction.mp4" -d                         # Analyze given video and display with list of actors in the frame
      ./%(prog)s "Pulp Fiction.mp4" -df                        # Highlight faces
@@ -23,7 +23,7 @@ def parse_args():
      '''
 
     parser = argparse.ArgumentParser(description='Face recognition application.',
-                                     usage='./%(prog)s FILE_NAME MOVIE_TITLE',
+                                     usage='./%(prog)s FILE_NAME',
                                      epilog=examples,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
 

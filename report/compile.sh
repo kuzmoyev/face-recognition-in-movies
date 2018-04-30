@@ -19,9 +19,9 @@ pdflatex -halt-on-error -file-line-error -interaction=nonstopmode -output-direct
          ${TEX_FILE} > ${LOG_FILE}
 
 
-mv ${OUT_DIR}/${PDF_FILE} ${PDF_FILE}
 
 if [ $? -eq 0 ]; then
+    mv ${OUT_DIR}/${PDF_FILE} ${PDF_FILE}
     echo -e "${GREEN}"
     echo -n "Successfully Compiled ${PDF_FILE}"
     xdg-open ${PDF_FILE}

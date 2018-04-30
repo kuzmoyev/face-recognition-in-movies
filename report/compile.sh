@@ -3,7 +3,7 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'
 
-OUT_DIR=pdf
+OUT_DIR=out
 TEX_FILE=$(echo *.tex)
 AUX_FILE=${OUT_DIR}/${TEX_FILE/tex/aux}
 PDF_FILE=${TEX_FILE/tex/pdf}

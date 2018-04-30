@@ -44,8 +44,13 @@ for directory in DATA_FOLDER, METADATA_FOLDER, IMDB_IMAGES_FOLDER, TMDB_IMAGES_F
 def get_movie_data(title):
     found_data = requests.get(SEARCH_MOVIES_URL.format(title)).text
     data = json.loads(found_data)
-    movie_id = data['results'][0]['id']
-    credits_data = requests.get(MOVIE_DETAILS_URL.format(movie_id)).text
+    try:
+        movie_id = data['results'][0]['id']
+        credits_data = requests.get(MOVIE_DETAILS_URL.format(movie_id)).text
+    except IndexError:
+        log.error(f"Movie {title} not found.")
+        raise
+
     return json.loads(credits_data)
 
 
@@ -67,7 +72,11 @@ def get_cast_images(movie, max_actors=20, max_images_per_actor=3, year_delta=3):
     :return: dictionary {actor_name: [photo_path, photo_path, ...]}
     """
 
-    data = get_movie_data(movie)
+    try:
+        data = get_movie_data(movie)
+    except IndexError:
+        return {}
+
     release_year = int(data['release_date'].split('-')[0])
 
     max_actors = max_actors or len(data["credits"]["cast"])

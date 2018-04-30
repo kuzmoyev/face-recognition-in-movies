@@ -2,30 +2,50 @@
 
 import argparse
 import logging
+import os
 
 from processing.face_recognition import FaceRecognizer
 from imdb import imdb
 
 
 def parse_args():
+    examples = '''example:
+
+     ./%(prog)s "Pulp Fiction.mp4" -d                         # Analyze given video and display with list of actors in the frame
+     ./%(prog)s "Pulp Fiction.mp4" -df                        # Highlight faces
+     ./%(prog)s "video.mp4" -t "pulp fiction" -df             # With cast from Pulp Fiction
+     ./%(prog)s "Pulp Fiction.mp4" -dfv                       # With detailed output
+     ./%(prog)s "Pulp Fiction.mp4" -o "Analyzed.avi"          # Save result in "Analyzed.avi"
+     ./%(prog)s "Pulp Fiction.mp4" -a "Bob" "bob_photo.jpg"   # Also search for "Bob" from "bob_photo.jpg"
+     ./%(prog)s "Pulp Fiction.mp4" -s "stats.csv"             # Output analyzed data in csv format to "stats.csv"
+     
+     ./%(prog)s "Pulp Fiction.mp4" -t "pulp fiction" -dfv -a "Bob" "bob_photo.jpg" -s "stats.csv" -o "Analyzed.avi"
+     '''
+
     parser = argparse.ArgumentParser(description='Face recognition application.',
-                                     usage='%(prog)s FILE_NAME MOVIE_TITLE')
+                                     usage='./%(prog)s FILE_NAME MOVIE_TITLE',
+                                     epilog=examples,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
 
-    parser.add_argument('FILE_NAME', help='video file path')
-    parser.add_argument('MOVIE_TITLE', help='title of the movie (used for the specification of the cast)')
-
-    parser.add_argument('-o', '--output', help='output video file with recognised faces', required=False, metavar='F')
+    parser.add_argument('FILE_NAME', help='video file path or device id.')
     parser.add_argument('-v', '--verbose', help='detailed verbose output', required=False, action='store_true')
-    parser.add_argument('-s', '--show', help='show output frames', required=False, action='store_true')
+    parser.add_argument('-d', '--display', help='display output frames', required=False, action='store_true')
     parser.add_argument('-f', '--faces', help='highlight found faces', required=False, action='store_true')
-    parser.add_argument('-a', '--additional-photos', help='additional photos',
+
+    parser.add_argument('-t', '--title', help='title of the movie (used for the specification of the cast). '
+                                              'If not specified, will use input file name '
+                                              'as a title (without extension).', required=False)
+    parser.add_argument('-o', '--output', help='output video file with recognised faces', required=False,
+                        metavar='PATH')
+    parser.add_argument('-s', '--stats', help='stats file path', required=False, metavar='PATH')
+    parser.add_argument('-a', '--additional-photos', help='additional photos', default=[],
                         required=False, nargs=argparse.ONE_OR_MORE, action='append', metavar=('NAME PATH', 'PATH'))
 
     args = parser.parse_args()
 
     if any(len(l) < 2 for l in args.additional_photos):
         print('Parameter -a/--additional-photos requires at least 2 arguments.')
-        print('usage: movie_face_recognition.py FILE_NAME MOVIE_TITLE -a NAME PATH [PATH ...]')
+        print('usage: ./movie_face_recognition.py FILE_NAME -a NAME PATH [PATH ...]')
         exit()
 
     return args
@@ -58,21 +78,26 @@ def main():
     args = parse_args()
     init_logger(args.verbose)
 
-    input_video = args.FILE_NAME if args.FILE_NAME != '0' else 0
+    try:
+        # check if input is a device
+        input_video = int(args.FILE_NAME)
+        movie_title = args.title
+    except ValueError:
+        # input from file
+        input_video = args.FILE_NAME
+        movie_title = args.title or os.path.splitext(os.path.basename(input_video))[0]  # cut extension
+
     output_video = args.output
-    movie_title = args.MOVIE_TITLE
-    show_frames = args.show
+    display_frames = args.display
     highlight_faces = args.faces
+    stats_file = args.stats
 
-    print(args)
-
-    cast = imdb.get_cast_images(movie_title)
-
+    cast = imdb.get_cast_images(movie_title) if movie_title else {}
     for name, *paths in args.additional_photos:
         cast[name] = paths
 
-    face_recognizer = FaceRecognizer(show=show_frames, highlight_faces=highlight_faces)
-    face_recognizer.process(input_video, cast, output_video)
+    face_recognizer = FaceRecognizer(display=display_frames, highlight_faces=highlight_faces)
+    face_recognizer.process(input_video, cast, output_video, stats_file=stats_file)
 
 
 if __name__ == '__main__':

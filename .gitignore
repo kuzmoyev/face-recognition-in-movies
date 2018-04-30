@@ -107,7 +107,6 @@ venv.bak/
 ### VirtualEnv template
 # Virtualenv
 # http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
-.Python
 [Bb]in
 [Ii]nclude
 [Ll]ib
@@ -115,9 +114,9 @@ venv.bak/
 [Ll]ocal
 [Ss]cripts
 pyvenv.cfg
-.venv
 pip-selfcheck.json
 
 src/imdb/imdb_data
 !mat_to_csv.py
 !imdb.csv
+run.sh

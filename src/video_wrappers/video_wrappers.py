@@ -22,21 +22,38 @@ class BaseVideo:
         return int(self.video.get(cv2.CAP_PROP_FPS))
 
     @property
+    def current_position(self):
+        return int(self.video.get(cv2.CAP_PROP_POS_MSEC)) // 1000
+
+    @property
+    def fourcc(self):
+        return int(self.video.get(cv2.CAP_PROP_FOURCC))
+
+    @property
     def parameters(self):
         """Used to create VideoWriter with the same parameters"""
         return {
             'fps': self.fps,
             'width': self.width,
-            'height': self.height
+            'height': self.height,
+            'fourcc': self.fourcc
         }
 
     @property
     def frames_count(self):
-        return int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
+        if self.file_name == 0:
+            # Web cam
+            return 0
+        else:
+            return int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
 
     @property
     def video_length(self):
-        return int(self.frames_count / self.fps)
+        if self.file_name == 0:
+            # Web cam
+            return 0
+        else:
+            return int(self.frames_count / self.fps)
 
     def __enter__(self):
         return self
@@ -79,9 +96,14 @@ class VideoReader(BaseVideo):
 class VideoWriter(BaseVideo):
     cv_class = cv2.VideoWriter
 
-    def __init__(self, file_name, fourcc='MJPG', fps=30, width=0, height=0):
-        super().__init__(file_name, fourcc=cv2.VideoWriter_fourcc(*fourcc), fps=fps, frameSize=(width, height))
+    DEFAULT_CODEC = cv2.VideoWriter_fourcc(*'MJPG')
+
+    def __init__(self, file_name, fourcc=DEFAULT_CODEC, fps=30, width=0, height=0):
+        super().__init__(file_name, fourcc=fourcc, fps=fps, frameSize=(width, height))
 
     def write(self, frame):
         if self.video:
             self.video.write(frame)
+
+    def active(self):
+        return self.video is not None

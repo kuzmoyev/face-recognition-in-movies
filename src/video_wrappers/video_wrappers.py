@@ -99,7 +99,7 @@ class VideoWriter(BaseVideo):
     DEFAULT_CODEC = cv2.VideoWriter_fourcc(*'MJPG')
 
     def __init__(self, file_name, fourcc=DEFAULT_CODEC, fps=30, width=0, height=0):
-        super().__init__(file_name, fourcc=fourcc, fps=fps, frameSize=(width, height))
+        super().__init__(file_name, fourcc=self.DEFAULT_CODEC, fps=fps, frameSize=(width, height))
 
     def write(self, frame):
         if self.video:

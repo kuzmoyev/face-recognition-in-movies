@@ -2,16 +2,31 @@
 %% Created in 2018 by Martin Slapak
 %%
 %% Based on file for NRP report LaTeX class by Vit Zyka (2008)
-%%
-%% Compilation:
-%% >pdflatex report
-%% >bibtex report
-%% >pdflatex report
-%% >pdflatex report
 
-\documentclass[english]{mvi-report}
+\documentclass[hidelinks, english]{mvi-report}
 
 \usepackage[utf8]{inputenc}
+\usepackage{url}
+\usepackage{mathtools}
+
+\usepackage{graphicx}
+\usepackage{blindtext}
+\usepackage{dirtree}
+\usepackage[export]{adjustbox}
+\usepackage{array}
+\usepackage{bigstrut}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{subfigure}
+\usepackage[all]{hypcap}
+\usepackage[bottom]{footmisc}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage{cleveref}
+
+
+
+\graphicspath{{img/}}
 
 \title{Face recognition in movies}
 
@@ -19,7 +34,29 @@
 \affiliation{ČVUT - FIT}
 \email{kuzmoyev@fit.cvut.cz}
 
-\def\file#1{{\tt#1}}
+
+\newcommand{\subimage}[3][1]{
+\subfigure{
+    \includegraphics[valign=c, width=#1\textwidth]{#2.#3}
+}
+}
+
+\newcommand{\smplimage}[3][1]{
+\centerline{
+    \includegraphics[width=#1\textwidth]{#2.#3}
+}
+}
+
+\newcommand{\image}[4][1]{
+\begin{figure}[H]
+    \smplimage[#1]{#2}{#3}
+    \caption{#4}
+    \label{fig:#2}
+\end{figure}
+}
+
+
+
 
 \begin{document}
 
@@ -27,48 +64,157 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
-Definice problému/úkolu, který práce řeší\ldots
-
+This work explores one of the modern face recognition techniques that is used in
+the \textit{face\_recognition}\cite{face_recognition} library for Python. The output of this work will be
+the description of used methods and the application with the command-line interface that can analyze users video and
+produce the copy of the video with highlighted and named faces, statistics in CSV format and/or visualization of actors'
+appearances throughout the movie.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Input data}
-Původ, proces získání, předzpracování, \ldots
+
+\subsection{Retrieving}
+Movies cast' photos are needed for analysis. Actors photos were retrieved mainly from
+the~\textit{IMDB-WIKI dataset}\cite{Rothe-IJCV-2016} that has 500k+ images of the 20k+ celebrities. This dataset also
+provides metadata about photos like year photo was taken, face score, etc.
+
+Photos of actors that are not found in this dataset are retrieved from the \textit{TMDB API}\cite{tmdb-api}.
+The TMDB API is also used for movie search and cast specification (as movie title is set by an application
+parameter).
+
+Additional photos with names can be added to analysis as application parameters.
+
+\subsection{Selection}
+After the cast is specified, photos of the actors are sought in the IMDB dataset. First photos are filtered by the year
+they were taken, taken only those from range \( (y-3, y+3) \), where \(y\) is a release year of the movie. Then for
+each actor 3 photos(at most) with the highest face score are taken. If no such photos are found, they are downloaded
+from the TMDB API (only one photo per actor is provided).
+
+The cast is limited to top 20 billed actors.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Methods}
-Použité metody, jejich přizpůsobení, aplikace\ldots
+\vbox{
+In this section methods used in the \textit{face\_recognition} library and their application in this work will be described.
+}
+\subsection{Preprocessing}
+Photo preprocessing consists of:
+
+\begin{itemize}
+\item Converting to gradient domain (\cref{fig:gradient})
+\end{itemize}
+
+Converting image to gradient domain eliminates dependency on the lighting in the scene. The same image with different
+brightness would have very different color values but the same gradient values which makes the task a lot easier.
+
+\begin{figure}[H]
+    \centering
+    \subimage[0.17]{original}{jpg}
+    \subimage[0.03]{arrow}{png}
+    \subimage[0.17]{gradient}{jpg}
+    \caption{Gradient domain.}
+    \label{fig:gradient}
+\end{figure}
+
+\begin{itemize}
+\item Converting gradient to the histogram of oriented gradients (HOG)(\cref{fig:hog})
+\end{itemize}
+
+The gradient of the whole image gives too much detail and does not show actual facial features. That is why HOG
+representation of the image is used.
+
+\textit{The algorithm for extracting HOGs counts occurrences of edge orientations in a local neighborhood of an image.
+In our case, the image is first divided into small connected regions, called cells, and for each cell a histogram of
+edge orientations is computed. The histogram channels are evenly spread over 0–180 or 0–360, depending on whether
+the gradient is ‘unsigned’ or ‘signed’. The histogram counts are normalized to compensate for illumination.}\cite{hog}
+
+
+\begin{figure}[H]
+    \centering
+    \subimage[0.17]{gradient}{jpg}
+    \subimage[0.03]{arrow}{png}
+    \subimage[0.17]{hog}{jpg}
+    \caption{Histogram of oriented gradients(HOG).}
+    \label{fig:hog}
+\end{figure}
+
+
+\begin{figure*}[t]
+    \centering
+    \subimage[0.17]{tilted}{jpg}
+    \subimage[0.03]{arrow}{png}
+    \subimage[0.17]{landmarks_tilted}{jpg}
+    \subimage[0.03]{multiply}{jpg}
+    \subimage[0.17]{landmarks}{jpg}
+    \subimage[0.03]{arrow}{png}
+    \subimage[0.17]{landmarks_aligned}{jpg}
+    \caption{Aligned face landmarks.}
+    \label{fig:landmarks}
+\end{figure*}
+
+
+Now to find a face on the image, we need to find the region that is similar to learned faces HOG (\cref{fig:detected}).
+The example is taken from the \textit{dlib}\cite{generic-hog}.
+
+\begin{figure}[H]
+    \centering
+    \subimage[0.17]{detected}{jpg}
+    \subimage[0.17]{hog_general}{png}
+    \caption{Comparison to learned HOG detector.}
+    \label{fig:detected}
+\end{figure}
+
+
+
+\begin{itemize}
+\item Alignment of face landmarks (\cref{fig:landmarks})
+\end{itemize}
+
+The last problem that preprocessing solves is the face alignment. Algorithm for the face alignment used
+in the \textit{face\_recognition} was introduced by Vahid Kazemi and Josephine Sullivan in the paper
+\textit{One Millisecond Face Alignment with an Ensemble of Regression Trees}\cite{face-alignment}. The main idea of the
+algorithm is to find 68 specific points-landmarks on the face (\cref{fig:landmarks}, 2nd image). Then using affine
+transformations align them with centered landmarks (\cref{fig:landmarks}, 3rd image).
+
+
+\subsection{Encoding}
+
+The problem of image processing is that it is genuinely slow, so comparing images directly would not be efficient
+enough. That is why it is necessary to encode images into lower dimensionality. Those encodings would be some facial
+features that distinguish the face of the one person from the face of another.
+
+Deep neural networks are used for specifying of those features. Trained DNN will receive the image of the face as
+an input and return 128 feature values as the output.
+
+\subsection{DNN training}
+DNN receives 3 images: 2 images of the same person and 3rd of the other and adjusts itself in such a way that
+difference of the first 2 images' encodings is minimal and difference of 1st and 3rd image is maximal. This DNN will
+encode faces into 128 numbers that describe most distinguishable features of the faces.
+
+\subsection{Faces classification}
+After preprocessing and encoding faces can be simply classified with any classification algorithm.
+The \textit{face\_recognition}s approach is to calculate euclidean distance between all known faces and the given
+face and classify it as one(or many) of the known faces if their distance is less than some constant tolerance.
+
+Another approach for face classification in movies, where the number of known faces (cast) is limited and for each
+actor, there are more available photos, would be using KNN algorithm to get rid of classification as "Unknown" and to
+improve accuracy. Unfortunately, this approach had not been tested as it came to mind of the author at the time of
+writing this report. So it will be tested later.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% --- VYSLEDKY
 \section{Outputs}
 
-Jakých výsledků bylo dosaženo, co na ně melo vliv. Srovnání s očekáváním, \emph{diskuze nad výsledky} -- zvláště důležitá v případě, že něco vyšlo \emph{divně}.
-
-\begin{figure}[h]
-  \centering\leavevmode
-  \includegraphics[width=.45\linewidth]{img/fit-logo-cz.pdf}\vskip-0.5cm
-  \caption{Vliv parametru \emph{Y}}
-  \label{fig:par-y}
-\end{figure}
-\begin{figure}[h]
-  \centering\leavevmode
-  \includegraphics[width=.45\linewidth]{img/fit-logo-en.pdf}\vskip-0.5cm
-  \caption{Vliv parametru \emph{X}}
-  \label{fig:par-x}
-\end{figure}
-
-Jak je z ilustrací \ref{fig:par-y} a \ref{fig:par-x} patrné, není to totéž, protože\ldots
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% --- ZAVER
 \section{Conclusion}
-K čemu to bylo/je dobré, jak to půjde využít dále, co by šlo ještě vylepšit\ldots
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% --- Bibliography
-\nocite{zizka}
-%\bibliographystyle{plain-cz-online}
 \bibliography{reference}
+
 
 \end{document}

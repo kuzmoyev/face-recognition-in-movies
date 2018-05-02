@@ -5,6 +5,7 @@ import logging
 import os
 
 from processing.face_recognition import FaceRecognizer
+from visualization.visualization import Visualizer
 from imdb import imdb
 
 
@@ -16,10 +17,10 @@ def parse_args():
      ./%(prog)s "video.mp4" -t "pulp fiction" -df             # With cast from Pulp Fiction
      ./%(prog)s "Pulp Fiction.mp4" -dfv                       # With detailed output
      ./%(prog)s "Pulp Fiction.mp4" -o "Analyzed.avi"          # Save result in "Analyzed.avi"
-     ./%(prog)s "Pulp Fiction.mp4" -a "Bob" "bob_photo.jpg"   # Also search for "Bob" from "bob_photo.jpg"
+     ./%(prog)s "Pulp Fiction.mp4" -a "Bob" "bobs_photo.jpg"  # Also search for "Bob" from "bobs_photo.jpg"
      ./%(prog)s "Pulp Fiction.mp4" -s "stats.csv"             # Output analyzed data in csv format to "stats.csv"
      
-     ./%(prog)s "Pulp Fiction.mp4" -t "pulp fiction" -dfv -a "Bob" "bob_photo.jpg" -s "stats.csv" -o "Analyzed.avi"
+     ./%(prog)s "Pulp Fiction.mp4" -t "pulp fiction" -dfv -a "Bob" "bobs_photo.jpg" -s "stats.csv" -o "Analyzed.avi"
      '''
 
     parser = argparse.ArgumentParser(description='Face recognition application.',
@@ -37,7 +38,11 @@ def parse_args():
                                               'as a title (without extension).', required=False)
     parser.add_argument('-o', '--output', help='output video file with recognised faces', required=False,
                         metavar='PATH')
-    parser.add_argument('-s', '--stats', help='stats file path', required=False, metavar='PATH')
+    parser.add_argument('-s', '--stats', help='output stats file path', required=False, metavar='PATH')
+    parser.add_argument('-p', '--plot', help='output visualization image path', required=False,
+                        metavar='PATH')
+    parser.add_argument('-n', '--actors-to-plot', help='number of top actors to plot in visualization (default - 5)',
+                        required=False, metavar='PATH', default=5, type=int)
     parser.add_argument('-a', '--additional-photos', help='additional photos', default=[],
                         required=False, nargs=argparse.ONE_OR_MORE, action='append', metavar=('NAME PATH', 'PATH'))
 
@@ -91,13 +96,19 @@ def main():
     display_frames = args.display
     highlight_faces = args.faces
     stats_file = args.stats
+    plot_path = args.plot
 
     cast = imdb.get_cast_images(movie_title) if movie_title else {}
     for name, *paths in args.additional_photos:
         cast[name] = paths
 
     face_recognizer = FaceRecognizer(display=display_frames, highlight_faces=highlight_faces)
-    face_recognizer.process(input_video, cast, output_video, stats_file=stats_file)
+    stats, movie_length = face_recognizer.process(input_video, cast, output_video, stats_file=stats_file)
+
+
+    if plot_path:
+        visualizer = Visualizer()
+        visualizer.save_plot(plot_path, stats, movie_length, top_actors_count=args.actors_to_plot)
 
 
 if __name__ == '__main__':

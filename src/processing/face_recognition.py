@@ -38,16 +38,14 @@ class FaceRecognizer:
 
         face_names = []
         face_locations = []
-        if stats_file:
-            stats_df = pd.DataFrame(columns=['frame', 'Unknown'] + list(cast_photos.keys()))
-        else:
-            stats_df = None
+        stats_df = pd.DataFrame(columns=['frame', 'Unknown'] + list(cast_photos.keys()))
 
         with VideoReader(input_video) as reader, VideoWriter(output_video, **reader.parameters) as writer:
             analyzed_frame = reader.fps // self.analyzed_fps
             frames = reader.frames(return_frame_count=True)
             total_frames = reader.frames_count
             frame_scale = min(self.analyzed_height / reader.height, 1)
+            movie_length = datetime.timedelta(seconds=reader.video_length) if reader.video_length else '∞'
 
             log.v(f'Analysis info:')
             log.v(f'\tAnalyzing every {analyzed_frame} frame.')
@@ -62,8 +60,7 @@ class FaceRecognizer:
                     face_names, face_locations = self._find_faces(small_frame, known_face_names, known_face_encodings)
                     face_locations = [[int(c / frame_scale) for c in coordinates] for coordinates in face_locations]
 
-                    if stats_file:
-                        stats_df = self._append_to_stats(stats_df, f, face_names, face_locations)
+                    stats_df = self._append_to_stats(stats_df, f, face_names, face_locations)
 
                 if self.display or writer.active():
                     self._highlight_faces(frame, face_names, face_locations)
@@ -76,10 +73,14 @@ class FaceRecognizer:
                         writer.write(frame)
 
                 current_position = datetime.timedelta(seconds=reader.current_position)
-                movie_length = datetime.timedelta(seconds=reader.video_length) if reader.video_length else '∞'
                 pbar.set_postfix({'time': f"{current_position}s/{movie_length}s"})
+
+            movie_length = reader.video_length
+
         if stats_file:
             stats_df.to_csv(stats_file)
+
+        return stats_df, movie_length
 
     @staticmethod
     def _append_to_stats(df, frame, face_names, face_locations):

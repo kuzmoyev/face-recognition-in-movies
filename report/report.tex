@@ -74,7 +74,7 @@ appearances throughout the movie.
 \section{Input data}
 
 \subsection{Retrieving}
-Movies cast' photos are needed for analysis. Actors photos were retrieved mainly from
+Movies casts' photos are needed for analysis. Actors photos were retrieved mainly from
 the~\textit{IMDB-WIKI dataset}\cite{Rothe-IJCV-2016} that has 500k+ images of the 20k+ celebrities. This dataset also
 provides metadata about photos like year photo was taken, face score, etc.
 
@@ -155,7 +155,7 @@ the gradient is ‘unsigned’ or ‘signed’. The histogram counts are normali
 
 
 Now to find a face on the image, we need to find the region that is similar to learned faces HOG (\cref{fig:detected}).
-The example is taken from the \textit{dlib}\cite{generic-hog}.
+The example of learned HOG is taken from the \textit{dlib}\cite{generic-hog}.
 
 \begin{figure}[H]
     \centering
@@ -192,7 +192,7 @@ DNN receives 3 images: 2 images of the same person and 3rd of the other and adju
 difference of the first 2 images' encodings is minimal and difference of 1st and 3rd image is maximal. This DNN will
 encode faces into 128 numbers that describe most distinguishable features of the faces.
 
-\subsection{Faces classification}
+\subsection{Faces classification}\label{sub:classification}
 After preprocessing and encoding faces can be simply classified with any classification algorithm.
 The \textit{face\_recognition}s approach is to calculate euclidean distance between all known faces and the given
 face and classify it as one(or many) of the known faces if their distance is less than some constant tolerance.
@@ -205,16 +205,76 @@ writing this report. So it will be tested later.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Outputs}
 
+The result of the video processing by implemented application are:
+
+\begin{itemize}
+    \item Copy of the vidoe with highligted faces as shown on \cref{fig:rd_frame}
+    \item Statistics of the actors' faces apperiences and their locations throughout the movie
+    \item Visualisation of the actors' apperiences throughout the movie as shown on \cref{fig:pulp_fiction} and
+    \cref{fig:reservoir_dogs}
+\end{itemize}
+
+Five whole movies were analysed in the frameworks of this porject: \textit{Pulp Fiction}, \textit{Kill Bill: Vol. 1},
+\textit{Kill Bill: Vol. 2}, \textit{Inglourious Basterds} and \textit{Reservoir Dogs}. Statistics files can be found in
+\textit{src/visualization/data/} folder.
+
+\section{Possible improvements}
+
+One of the big issues of the trained model is that it is has bad accuracy on non european faces.
+\textit{Since the face recognition model was trained using public datasets built pictures scraped from websites. <...>
+Those public datasets are not evenly distributed amongst all individuals from all
+countries.}\cite{face_recognition_error}. This problem is well visible on \cref{fig:pulp_fiction} as Samuel L. Jacksons
+line is much rarer and containes more misclassifications than John Travoltas even in the common scenes. Another example
+of the same issue is \cref{fig:pf_misclass}.
+
+The solution would be to train model on images with bigger variety of races.
+
+Another problem is in the misclassifications ("Unknown"s and wrong classification). As was mentioned in
+\cref{sub:classification} one of the solutions could be to use KNN for classification. This problem could also be solved
+by the noise removing in the output data. As most misclassifications don't last more than couple of frames, they can be
+detected and corrected.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion}
 
-
+The aim of this work was to understand modern face recognition techniques and to implement command-line interface to
+analyze videos. The goal is reached at a sufficient level and the work can be extended in functionality and
+classification quality.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bibliography{reference}
 
+\begin{figure*}[t]
+    \centering
+    \smplimage[1]{pulp_fiction}{png}
+    \caption{Pulp fiction analysis.}
+    \label{fig:pulp_fiction}
+\end{figure*}
+
+\begin{figure*}[t]
+    \centering
+    \smplimage[1]{reservoir_dogs}{png}
+    \caption{Reservoir dogs analysis.}
+    \label{fig:reservoir_dogs}
+\end{figure*}
+
+\begin{figure*}[t]
+    \centering
+    \smplimage[1]{rd_frame}{png}
+    \caption{Reservoir dogs frame with highlighted and named faces.}
+    \label{fig:rd_frame}
+\end{figure*}
+
+\begin{figure*}[t]
+    \centering
+    \smplimage[1]{pf_error}{png}
+    \caption{Misclassification of non european face (actual frame from the outputed video). Athors photo was included in
+    the searched cast. It was (obviously falsely) classified in 5 frames in \textit{Pulp Fiction}, in 3 frames in
+    \textit{Kill Bill: Vol. 1}, 1 in \textit{Kill Bill: Vol. 2}, in 37! frames in \textit{Inglourious Basterds} and none
+    in \textit{Reservoir Dogs}.}
+    \label{fig:pf_misclass}
+\end{figure*}
 
 \end{document}

@@ -2,7 +2,7 @@
 
 Face recognition application.
 
-* [Report](https://gitlab.fit.cvut.cz/kuzmoyev/mvi-sp/blob/master/report/report.pdf) **(Not ready yet) (If it is 2nd of May, it is probably ready and I forgot to remove this note.)**
+* [Report](https://gitlab.fit.cvut.cz/kuzmoyev/mvi-sp/blob/master/report/report.pdf) 
 * [Sources](https://gitlab.fit.cvut.cz/kuzmoyev/mvi-sp/tree/master/src)
 
 ## Task

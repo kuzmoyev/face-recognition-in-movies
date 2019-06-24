@@ -37,13 +37,13 @@
 
 \newcommand{\subimage}[3][1]{
 \subfigure{
-    \includegraphics[valign=c, width=#1\textwidth]{#2.#3}
+\includegraphics[valign=c, width=#1\textwidth]{#2.#3}
 }
 }
 
 \newcommand{\smplimage}[3][1]{
 \centerline{
-    \includegraphics[width=#1\textwidth]{#2.#3}
+\includegraphics[width=#1\textwidth]{#2.#3}
 }
 }
 
@@ -60,221 +60,256 @@
 
 \begin{document}
 
-\maketitle
+    \maketitle
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Introduction}
-This work explores one of the modern face recognition techniques that is used in
-the \textit{face\_recognition}\cite{face_recognition} library for Python. The output of this work will be
-the description of used methods and the application with the command-line interface that can analyze users video and
-produce the copy of the video with highlighted and named faces, statistics in CSV format and/or visualization of actors'
-appearances throughout the movie.
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \section{Introduction}
+    This work explores one of the modern face recognition techniques that is used in
+    the \textit{face\_recognition}\cite{face_recognition} library for Python. The output of this work will be
+    the description of used methods and the application with the command-line interface that can analyze users video and
+    produce the copy of the video with highlighted and named faces, statistics in CSV format and/or visualization of actors'
+    appearances throughout the movie.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Input data}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \section{Input data}
 
-\subsection{Retrieving}
-Movies casts' photos are needed for analysis. Actors photos were retrieved mainly from
-the~\textit{IMDB-WIKI dataset}\cite{Rothe-IJCV-2016} that has 500k+ images of the 20k+ celebrities. This dataset also
-provides metadata about photos like year photo was taken, face score, etc.
+    \subsection{Retrieving}
+    Movies casts' photos are needed for analysis. Actors photos were retrieved mainly from
+    the~\textit{IMDB-WIKI dataset}\cite{Rothe-IJCV-2016} that has 500k+ images of the 20k+ celebrities. This dataset also
+    provides metadata about photos like year photo was taken, face score, etc.
 
-Photos of actors that are not found in this dataset are retrieved from the \textit{TMDB API}\cite{tmdb-api}.
-The TMDB API is also used for movie search and cast specification (as movie title is set by an application
-parameter).
+    Photos of actors that are not found in this dataset are retrieved from the \textit{TMDB API}\cite{tmdb-api}.
+    The TMDB API is also used for movie search and cast specification (as movie title is set by an application
+    parameter).
 
-Additional photos with names can be added to analysis as application parameters.
+    Additional photos with names can be added to analysis as application parameters.
 
-\subsection{Selection}
-After the cast is specified, photos of the actors are sought in the IMDB dataset. First photos are filtered by the year
-they were taken, taken only those from range \( (y-3, y+3) \), where \(y\) is a release year of the movie. Then for
-each actor 3 photos(at most) with the highest face score are taken. If no such photos are found, they are downloaded
-from the TMDB API (only one photo per actor is provided).
+    \subsection{Selection}
+    After the cast is specified, photos of the actors are sought in the IMDB dataset. First photos are filtered by the year
+    they were taken, taken only those from range \( (y-3, y+3) \), where \(y\) is a release year of the movie. Then for
+    each actor 3 photos(at most) with the highest face score are taken. If no such photos are found, they are downloaded
+    from the TMDB API (only one photo per actor is provided).
 
-The cast is limited to top 20 billed actors.
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Methods}
-\vbox{
-In this section methods used in the \textit{face\_recognition} library and their application in this work will be described.
-}
-\subsection{Preprocessing}
-Photo preprocessing consists of:
-
-\begin{itemize}
-\item Converting to gradient domain (\cref{fig:gradient})
-\end{itemize}
-
-Converting image to gradient domain eliminates dependency on the lighting in the scene. The same image with different
-brightness would have very different color values but the same gradient values which makes the task a lot easier.
-
-\begin{figure}[H]
-    \centering
-    \subimage[0.17]{original}{jpg}
-    \subimage[0.03]{arrow}{png}
-    \subimage[0.17]{gradient}{jpg}
-    \caption{Gradient domain.}
-    \label{fig:gradient}
-\end{figure}
-
-\begin{itemize}
-\item Converting gradient to the histogram of oriented gradients (HOG)(\cref{fig:hog})
-\end{itemize}
-
-The gradient of the whole image gives too much detail and does not show actual facial features. That is why HOG
-representation of the image is used.
-
-\textit{The algorithm for extracting HOGs counts occurrences of edge orientations in a local neighborhood of an image.
-In our case, the image is first divided into small connected regions, called cells, and for each cell a histogram of
-edge orientations is computed. The histogram channels are evenly spread over 0–180 or 0–360, depending on whether
-the gradient is ‘unsigned’ or ‘signed’. The histogram counts are normalized to compensate for illumination.}\cite{hog}
+    The cast is limited to top 20 billed actors.
 
 
-\begin{figure}[H]
-    \centering
-    \subimage[0.17]{gradient}{jpg}
-    \subimage[0.03]{arrow}{png}
-    \subimage[0.17]{hog}{jpg}
-    \caption{Histogram of oriented gradients(HOG).}
-    \label{fig:hog}
-\end{figure}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \section{Methods}
+    \vbox{
+    In this section methods used in the \textit{face\_recognition} library and their application in this work will be described.
+    }
+    \subsection{Preprocessing}
+    Photo preprocessing consists of:
+
+    \begin{itemize}
+        \item Converting to gradient domain (\cref{fig:gradient})
+    \end{itemize}
+
+    Converting image to gradient domain eliminates dependency on the lighting in the scene. The same image with different
+    brightness would have very different color values but the same gradient values which makes the task a lot easier.
+
+    \begin{figure}[H]
+        \centering
+        \subimage[0.17]{original}{jpg}
+        \subimage[0.03]{arrow}{png}
+        \subimage[0.17]{gradient}{jpg}
+        \caption{Gradient domain.}
+        \label{fig:gradient}
+    \end{figure}
+
+    \begin{itemize}
+        \item Converting gradient to the histogram of oriented gradients (HOG)(\cref{fig:hog})
+    \end{itemize}
+
+    The gradient of the whole image gives too much detail and does not show actual facial features. That is why HOG
+    representation of the image is used.
+
+    \textit{The algorithm for extracting HOGs counts occurrences of edge orientations in a local neighborhood of an image.
+    In our case, the image is first divided into small connected regions, called cells, and for each cell a histogram of
+    edge orientations is computed. The histogram channels are evenly spread over 0–180 or 0–360, depending on whether
+    the gradient is ‘unsigned’ or ‘signed’. The histogram counts are normalized to compensate for illumination.}\cite{hog}
 
 
-\begin{figure*}[t]
-    \centering
-    \subimage[0.17]{tilted}{jpg}
-    \subimage[0.03]{arrow}{png}
-    \subimage[0.17]{landmarks_tilted}{jpg}
-    \subimage[0.03]{multiply}{jpg}
-    \subimage[0.17]{landmarks}{jpg}
-    \subimage[0.03]{arrow}{png}
-    \subimage[0.17]{landmarks_aligned}{jpg}
-    \caption{Aligned face landmarks.}
-    \label{fig:landmarks}
-\end{figure*}
+    \begin{figure}[H]
+        \centering
+        \subimage[0.17]{gradient}{jpg}
+        \subimage[0.03]{arrow}{png}
+        \subimage[0.17]{hog}{jpg}
+        \caption{Histogram of oriented gradients(HOG).}
+        \label{fig:hog}
+    \end{figure}
 
 
-Now to find a face on the image, we need to find the region that is similar to learned faces HOG (\cref{fig:detected}).
-The example of learned HOG is taken from the \textit{dlib}\cite{generic-hog}.
-
-\begin{figure}[H]
-    \centering
-    \subimage[0.17]{detected}{jpg}
-    \subimage[0.17]{hog_general}{png}
-    \caption{Comparison to learned HOG detector.}
-    \label{fig:detected}
-\end{figure}
-
-
-
-\begin{itemize}
-\item Alignment of face landmarks (\cref{fig:landmarks})
-\end{itemize}
-
-The last problem that preprocessing solves is the face alignment. Algorithm for the face alignment used
-in the \textit{face\_recognition} was introduced by Vahid Kazemi and Josephine Sullivan in the paper
-\textit{One Millisecond Face Alignment with an Ensemble of Regression Trees}\cite{face-alignment}. The main idea of the
-algorithm is to find 68 specific points-landmarks on the face (\cref{fig:landmarks}, 2nd image). Then using affine
-transformations align them with centered landmarks (\cref{fig:landmarks}, 3rd image).
+    \begin{figure*}[t]
+        \centering
+        \subimage[0.17]{tilted}{jpg}
+        \subimage[0.03]{arrow}{png}
+        \subimage[0.17]{landmarks_tilted}{jpg}
+        \subimage[0.03]{multiply}{jpg}
+        \subimage[0.17]{landmarks}{jpg}
+        \subimage[0.03]{arrow}{png}
+        \subimage[0.17]{landmarks_aligned}{jpg}
+        \caption{Aligned face landmarks.}
+        \label{fig:landmarks}
+    \end{figure*}
 
 
-\subsection{Encoding}
+    Now to find a face on the image, we need to find the region that is similar to learned faces HOG (\cref{fig:detected}).
+    The example of learned HOG is taken from the \textit{dlib}\cite{generic-hog}.
 
-The problem of image processing is that it is genuinely slow, so comparing images directly would not be efficient
-enough. That is why it is necessary to encode images into lower dimensionality. Those encodings would be some facial
-features that distinguish the face of the one person from the face of another.
-
-Deep neural networks are used for specifying of those features. Trained DNN will receive the image of the face as
-an input and return 128 feature values as the output.
-
-\subsection{DNN training}
-DNN receives 3 images: 2 images of the same person and 3rd of the other and adjusts itself in such a way that
-difference of the first 2 images' encodings is minimal and difference of 1st and 3rd image is maximal. This DNN will
-encode faces into 128 numbers that describe most distinguishable features of the faces.
-
-\subsection{Faces classification}\label{sub:classification}
-After preprocessing and encoding faces can be simply classified with any classification algorithm.
-The \textit{face\_recognition}s approach is to calculate euclidean distance between all known faces and the given
-face and classify it as one(or many) of the known faces if their distance is less than some constant tolerance.
-
-Another approach for face classification in movies, where the number of known faces (cast) is limited and for each
-actor, there are more available photos, would be using KNN algorithm to get rid of classification as "Unknown" and to
-improve accuracy. Unfortunately, this approach had not been tested as it came to mind of the author at the time of
-writing this report. So it will be tested later.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Outputs}
-
-The result of the video processing by implemented application are:
-
-\begin{itemize}
-    \item Copy of the vidoe with highligted faces as shown on \cref{fig:rd_frame}
-    \item Statistics of the actors' faces apperiences and their locations throughout the movie
-    \item Visualisation of the actors' apperiences throughout the movie as shown on \cref{fig:pulp_fiction} and
-    \cref{fig:reservoir_dogs}
-\end{itemize}
-
-Five whole movies were analysed in the frameworks of this porject: \textit{Pulp Fiction}, \textit{Kill Bill: Vol. 1},
-\textit{Kill Bill: Vol. 2}, \textit{Inglourious Basterds} and \textit{Reservoir Dogs}. Statistics files can be found in
-\textit{src/visualization/data/} folder.
-
-\section{Possible improvements}
-
-One of the big issues of the trained model is that it is has bad accuracy on non european faces.
-\textit{Since the face recognition model was trained using public datasets built pictures scraped from websites. <...>
-Those public datasets are not evenly distributed amongst all individuals from all
-countries.}\cite{face_recognition_error}. This problem is well visible on \cref{fig:pulp_fiction} as Samuel L. Jacksons
-line is much rarer and containes more misclassifications than John Travoltas even in the common scenes. Another example
-of the same issue is \cref{fig:pf_misclass}.
-
-The solution would be to train model on images with bigger variety of races.
-
-Another problem is in the misclassifications ("Unknown"s and wrong classification). As was mentioned in
-\cref{sub:classification} one of the solutions could be to use KNN for classification. This problem could also be solved
-by the noise removing in the output data. As most misclassifications don't last more than couple of frames, they can be
-detected and corrected.
+    \begin{figure}[H]
+        \centering
+        \subimage[0.17]{detected}{jpg}
+        \subimage[0.17]{hog_general}{png}
+        \caption{Comparison to learned HOG detector.}
+        \label{fig:detected}
+    \end{figure}
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Conclusion}
 
-The aim of this work was to understand modern face recognition techniques and to implement command-line interface to
-analyze videos. The goal is reached at a sufficient level and the work can be extended in functionality and
-classification quality.
+    \begin{itemize}
+        \item Alignment of face landmarks (\cref{fig:landmarks})
+    \end{itemize}
+
+    The last problem that preprocessing solves is the face alignment. Algorithm for the face alignment used
+    in the \textit{face\_recognition} was introduced by Vahid Kazemi and Josephine Sullivan in the paper
+    \textit{One Millisecond Face Alignment with an Ensemble of Regression Trees}\cite{face-alignment}. The main idea of the
+    algorithm is to find 68 specific points-landmarks on the face (\cref{fig:landmarks}, 2nd image). Then using affine
+    transformations align them with centered landmarks (\cref{fig:landmarks}, 3rd image).
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\bibliography{reference}
+    \subsection{Encoding}
 
-\begin{figure*}[t]
-    \centering
-    \smplimage[1]{pulp_fiction}{png}
-    \caption{Pulp fiction analysis.}
-    \label{fig:pulp_fiction}
-\end{figure*}
+    The problem of image processing is that it is genuinely slow, so comparing images directly would not be efficient
+    enough. That is why it is necessary to encode images into lower dimensionality. Those encodings would be some facial
+    features that distinguish the face of the one person from the face of another.
 
-\begin{figure*}[t]
-    \centering
-    \smplimage[1]{reservoir_dogs}{png}
-    \caption{Reservoir dogs analysis.}
-    \label{fig:reservoir_dogs}
-\end{figure*}
+    Deep neural networks are used for specifying of those features. Trained DNN will receive the image of the face as
+    an input and return 128 feature values as the output.
 
-\begin{figure*}[t]
-    \centering
-    \smplimage[1]{rd_frame}{png}
-    \caption{Reservoir dogs frame with highlighted and named faces.}
-    \label{fig:rd_frame}
-\end{figure*}
+    \subsection{DNN training}
+    DNN receives 3 images: 2 images of the same person and 3rd of the other and adjusts itself in such a way that
+    difference of the first 2 images' encodings is minimal and difference of 1st and 3rd image is maximal. This DNN will
+    encode faces into 128 numbers that describe most distinguishable features of the faces.
 
-\begin{figure*}[t]
-    \centering
-    \smplimage[1]{pf_error}{png}
-    \caption{Misclassification of non european face (actual frame from the outputed video). Athors photo was included in
-    the searched cast. It was (obviously falsely) classified in 5 frames in \textit{Pulp Fiction}, in 3 frames in
-    \textit{Kill Bill: Vol. 1}, 1 in \textit{Kill Bill: Vol. 2}, in 37! frames in \textit{Inglourious Basterds} and none
-    in \textit{Reservoir Dogs}.}
-    \label{fig:pf_misclass}
-\end{figure*}
+    \subsection{DNN topology}
+
+    Neural network used for the encoding consists of 6 convolutional layers (with 4 pooling layers) and 3 fully
+    connected layers. Regularized with L2 regularization.
+
+    \begin{table}[htb]
+        \begin{tabular}{lll}
+            \textbf{layer} & \textbf{size-in} & \textbf{size-out} \\
+            conv1 & 220x220x3 & 110x110x64        \\
+            pool1 & 110x110x64 & 55x55x64          \\
+            rnorm1 & 55x55x64 & 55x55x64          \\
+            conv2a & 55x55x64 & 55x55x64          \\
+            conv2 & 55x55x64 & 55x55x292         \\
+            rnorm2 & 55x55x292 & 55x55x192         \\
+            pool2 & 55x55x192 & 28x28x192         \\
+            conv3a & 28x28x192 & 28x28x192         \\
+            conv3 & 28x28x192 & 28x28x384         \\
+            pool3 & 28x28x384 & 14x14x384         \\
+            conv4a & 14x14x384 & 14x14x384         \\
+            conv4 & 14x14x384 & 14x14x256         \\
+            conv5a & 14x14x256 & 14x14x256         \\
+            conv5 & 14x14x256 & 14x14x256         \\
+            conv6a & 14x14x256 & 14x14x256         \\
+            conv6 & 14x14x256 & 14x14x256         \\
+            pool4 & 14x14x256 & 7x7x256           \\
+            concat & 7x7x256 & 7x7x256           \\
+            fc1 & 7x7x256 & 1x32x128          \\
+            fc2 & 1x32x128 & 1x32x128          \\
+            fc3 & 1x32x128 & 1x1x128           \\
+            L2 & 1x1x128 & 1x1x128
+        \end{tabular}
+        \caption{DNN topology}
+    \end{table}
+
+
+    \subsection{Faces classification}\label{sub:classification}
+    After preprocessing and encoding faces can be simply classified with any classification algorithm.
+    The \textit{face\_recognition}s approach is to calculate euclidean distance between all known faces and the given
+    face and classify it as one(or many) of the known faces if their distance is less than some constant tolerance.
+
+    Another approach for face classification in movies, where the number of known faces (cast) is limited and for each
+    actor, there are more available photos, would be using KNN algorithm to get rid of classification as "Unknown" and to
+    improve accuracy. Unfortunately, this approach had not been tested as it came to mind of the author at the time of
+    writing this report. So it will be tested later.
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \section{Outputs}
+
+    The result of the video processing by implemented application are:
+
+    \begin{itemize}
+        \item Copy of the vidoe with highligted faces as shown on \cref{fig:rd_frame}
+        \item Statistics of the actors' faces apperiences and their locations throughout the movie
+        \item Visualisation of the actors' apperiences throughout the movie as shown on \cref{fig:pulp_fiction} and
+        \cref{fig:reservoir_dogs}
+    \end{itemize}
+
+    Five whole movies were analysed in the frameworks of this porject: \textit{Pulp Fiction}, \textit{Kill Bill: Vol. 1},
+    \textit{Kill Bill: Vol. 2}, \textit{Inglourious Basterds} and \textit{Reservoir Dogs}. Statistics files can be found in
+    \textit{src/visualization/data/} folder.
+
+    \section{Possible improvements}
+
+    One of the big issues of the trained model is that it is has bad accuracy on non european faces.
+    \textit{Since the face recognition model was trained using public datasets built pictures scraped from websites. <...>
+    Those public datasets are not evenly distributed amongst all individuals from all
+    countries.}\cite{face_recognition_error}. This problem is well visible on \cref{fig:pulp_fiction} as Samuel L. Jacksons
+    line is much rarer and containes more misclassifications than John Travoltas even in the common scenes. Another example
+    of the same issue is \cref{fig:pf_misclass}.
+
+    The solution would be to train model on images with bigger variety of races.
+
+    Another problem is in the misclassifications ("Unknown"s and wrong classification). As was mentioned in
+    \cref{sub:classification} one of the solutions could be to use KNN for classification. This problem could also be solved
+    by the noise removing in the output data. As most misclassifications don't last more than couple of frames, they can be
+    detected and corrected.
+
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \section{Conclusion}
+
+    The aim of this work was to understand modern face recognition techniques and to implement command-line interface to
+    analyze videos. The goal is reached at a sufficient level and the work can be extended in functionality and
+    classification quality.
+
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \bibliography{reference}
+
+    \begin{figure*}[t]
+        \centering
+        \smplimage[1]{pulp_fiction}{png}
+        \caption{Pulp fiction analysis.}
+        \label{fig:pulp_fiction}
+    \end{figure*}
+
+    \begin{figure*}[t]
+        \centering
+        \smplimage[1]{reservoir_dogs}{png}
+        \caption{Reservoir dogs analysis.}
+        \label{fig:reservoir_dogs}
+    \end{figure*}
+
+    \begin{figure*}[t]
+        \centering
+        \smplimage[1]{rd_frame}{png}
+        \caption{Reservoir dogs frame with highlighted and named faces.}
+        \label{fig:rd_frame}
+    \end{figure*}
+
+    \begin{figure*}[t]
+        \centering
+        \smplimage[1]{pf_error}{png}
+        \caption{Misclassification of non european face (actual frame from the outputed video). Athors photo was included in
+        the searched cast. It was (obviously falsely) classified in 5 frames in \textit{Pulp Fiction}, in 3 frames in
+        \textit{Kill Bill: Vol. 1}, 1 in \textit{Kill Bill: Vol. 2}, in 37! frames in \textit{Inglourious Basterds} and none
+        in \textit{Reservoir Dogs}.}
+        \label{fig:pf_misclass}
+    \end{figure*}
 
 \end{document}

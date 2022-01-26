@@ -1,10 +1,5 @@
 # Face recognition in movies
 
-Face recognition application.
-
-* [Report](https://gitlab.fit.cvut.cz/kuzmoyev/mvi-sp/blob/master/report/report.pdf) 
-* [Sources](https://gitlab.fit.cvut.cz/kuzmoyev/mvi-sp/tree/master/src)
-
 ## Task
 
 Implement console application for recognition of actors' faces in the movies.
@@ -23,14 +18,14 @@ Report will also containe a description of the algorithms and methods used in fa
 
 #### Requires
 
-* Python3.6
+* Python3.6+
 * virtualenv
 
 #### Setup
 
-    git clone git@gitlab.fit.cvut.cz:kuzmoyev/mvi-sp.git FaceRecognition
+    git clone git@github.com:kuzmoyev/face-recognition-in-movies.git FaceRecognition
     cd FaceRecognition
-    virtualenv -p /usr/bin/python3.6 venv
+    virtualenv -p /usr/bin/python3 venv
     source venv/bin/activate
     pip install -r requirements.txt
     cd src
@@ -47,5 +42,4 @@ photos to `imdb/imdb_data/tmdb_images`.
     
     ./movie_face_recognition.py "test_data/Reservoir Dogs.mp4" -fd
 
-Should run at ~10 fps. It analysis 4 out of 20 frames per second (every 5th frame) hence
-those jumps.
+Should run at ~10 fps. It analyses 4 out of 20 frames per second (every 5th frame) hence those jumps.
